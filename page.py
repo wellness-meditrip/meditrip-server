@@ -2,7 +2,7 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/home')
 def index():
     services = [
         {"name": "로그인/회원가입", "manager": "이규연"},
