@@ -1,0 +1,166 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: wellness_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - wellness_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Service (로그인)
+  auth-service:
+    build: ./apps/auth_service
+    container_name: wellness_auth_service
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${AUTH_DB}
+    ports:
+      - "${AUTH_SERVICE_PORT}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wellness_network
+
+  # Account Service (회원가입)
+  account-service:
+    build: ./apps/account_service
+    container_name: wellness_account_service
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${ACCOUNT_DB}
+    ports:
+      - "${ACCOUNT_SERVICE_PORT}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wellness_network
+
+  # User Service (계정 관리)
+  user-service:
+    build: ./apps/user_service
+    container_name: wellness_user_service
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${USER_DB}
+    ports:
+      - "${USER_SERVICE_PORT}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wellness_network
+
+  # Hospital Service (병원 정보)
+  hospital-service:
+    build: ./apps/hospital_service
+    container_name: wellness_hospital_service
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${HOSPITAL_DB}
+    ports:
+      - "${HOSPITAL_SERVICE_PORT}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wellness_network
+
+  # Review Service (리뷰 관리)
+  review-service:
+    build: ./apps/review_service
+    container_name: wellness_review_service
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${REVIEW_DB}
+    ports:
+      - "${REVIEW_SERVICE_PORT}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wellness_network
+
+  # Reservation Service (예약 관리)
+  reservation-service:
+    build: ./apps/reservation_service
+    container_name: wellness_reservation_service
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${RESERVATION_DB}
+    ports:
+      - "${RESERVATION_SERVICE_PORT}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wellness_network
+
+  # Doctor Service (의사 정보)
+  doctor-service:
+    build: ./apps/doctor_service
+    container_name: wellness_doctor_service
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${DOCTOR_DB}
+    ports:
+      - "${DOCTOR_SERVICE_PORT}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wellness_network
+
+  # Package Service (패키지 관리)
+  package-service:
+    build: ./apps/package_service
+    container_name: wellness_package_service
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${PACKAGE_DB}
+    ports:
+      - "${PACKAGE_SERVICE_PORT}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wellness_network
+
+  # Chatbot Service (챗봇 - VectorDB만 사용)
+  chatbot-service:
+    build: ./apps/chatbot_service
+    container_name: wellness_chatbot_service
+    restart: unless-stopped
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CHROMA_PATH=${CHROMA_PATH}
+    ports:
+      - "${CHATBOT_SERVICE_PORT}:8000"
+    volumes:
+      - ./apps/chatbot_service/chroma_db:/app/chroma_db
+    networks:
+      - wellness_network
+
+volumes:
+  postgres_data:
+
+networks:
+  wellness_network:
+    driver: bridge
