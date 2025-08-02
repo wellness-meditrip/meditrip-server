@@ -149,23 +149,39 @@ services:
     networks:
       - wellness_network
 
-  # Chatbot Service (챗봇 - VectorDB만 사용)
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: wellness_qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - wellness_network
+
+  # Chatbot Service (RAG 챗봇 - OpenAI + Langchain + Qdrant)
   chatbot-service:
     build: ./apps/chatbot_service
     container_name: wellness_chatbot_service
     restart: unless-stopped
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - CHROMA_PATH=${CHROMA_PATH}
+      - QDRANT_URL=http://qdrant:6333
     ports:
       - "${CHATBOT_SERVICE_PORT}:8000"
     volumes:
-      - ./apps/chatbot_service/
+      - ./apps/chatbot_service/data:/app/data
+    depends_on:
+      - qdrant
     networks:
       - wellness_network
 
 volumes:
   postgres_data:
+  qdrant_data:
 
 networks:
   wellness_network:
