@@ -25,7 +25,9 @@ services:
 
   # Auth Service (로그인)
   auth-service:
-    build: ./apps/auth_service
+    build:
+      context: .
+      dockerfile: ./apps/auth_service/Dockerfile
     container_name: wellness_auth_service
     restart: unless-stopped
     environment:

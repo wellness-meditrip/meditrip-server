@@ -6,9 +6,11 @@ from fastapi import FastAPI, APIRouter, Request, HTTPException
 from dotenv import load_dotenv
 import logging
 from fastapi.responses import JSONResponse
+from starlette.middleware.cors import CORSMiddleware
+
 from common.init_data import initialize_all_data
 
-load_dotenv();
+load_dotenv()
 
 app = FastAPI(
     title="Auth Service API",
@@ -28,14 +30,11 @@ app = FastAPI(
     
     ## 포트
     - 8001 (Docker 내부: 8000)
-    """
     """,
     version="1.0.0",
     contact={
         "name": "이규연(lee@gyuyeon.dev)"
-    },
-    lifespan=lifespan  # 라이프사이클 관리 함수 등록
-    """
+    }
 )
 
 
@@ -47,11 +46,6 @@ app.add_middleware(
     allow_methods=["*"],  # 모든 HTTP 메서드 허용
     allow_headers=["*"],  # 모든 헤더 허용
 )
-
-# 라우터 등록
-app.include_router(doctor_router)
-
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -65,7 +59,6 @@ async def startup_event():
         logger.info("Auth Service 초기화가 완료되었습니다.")
     except Exception as e:
         logger.error(f"Auth Service 초기화 중 오류가 발생했습니다: {e}")
-        # 애플리케이션 시작은 계속 진행 (DB 연결 문제 등으로 실패해도 서비스는 시작)
 
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Error: {exc}")
