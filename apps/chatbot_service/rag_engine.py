@@ -115,6 +115,7 @@ class RAGEngine:
             logger.error(f"❌ 문서 초기화 실패: {e}")
             return False
     
+
     async def generate_answer(self, question: str) -> Dict[str, Any]:
         """질문에 대한 RAG 기반 답변 생성"""
         try:
@@ -152,7 +153,7 @@ class RAGEngine:
 답변 규칙:
 1. 제공된 문서 내용만을 기반으로 답변하세요
 2. 의료 조언이 필요한 경우 전문의 상담을 권하세요
-3. 불확실한 정보는 "문서에서 명확하지 않습니다"라고 명시하세요
+3. 불확실한 정보는 "제공된 정보에 없습니다"라고 명시하세요
 4. 친절하고 이해하기 쉽게 설명하세요
 5. 한국어로 답변하세요
 
