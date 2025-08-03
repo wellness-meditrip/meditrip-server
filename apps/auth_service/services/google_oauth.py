@@ -5,7 +5,7 @@ import secrets
 from urllib.parse import urlencode
 from typing import Optional, Dict
 from fastapi import HTTPException
-from dto.user import UserResponseDTO  # 필요시 GoogleUserInfoDTO 추가 가능
+from dto.user import UserResponseDTO
 from repository.user import UserRepository
 
 class GoogleOAuthService:

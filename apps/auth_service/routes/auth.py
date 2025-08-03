@@ -8,7 +8,6 @@ security = HTTPBearer(auto_error=False)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-# 사용자 인증 의존성 함수
 async def get_current_user(
     access_token: Optional[str] = Cookie(None),
     authorization: Optional[HTTPAuthorizationCredentials] = Depends(security)
