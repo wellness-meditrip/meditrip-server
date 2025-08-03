@@ -12,14 +12,14 @@ def index():
     chatbot_port = os.getenv('CHATBOT_SERVICE_PORT')
     
     services = [
-        {"name": "로그인/회원가입", "manager": "이규연", "docs": "개발중"},
+        {"name": "로그인/회원가입", "manager": "이규연", "docs": f'<a href="{base_url}:8013/docs" target="_blank">로그인/회원가입API 문서</a>'},
         {"name": "계정", "manager": "이규연", "docs": "개발중"},
         {"name": "병원", "manager": "이규연", "docs": "개발중"},
         {"name": "패키지", "manager": "이규연", "docs": "개발중"},
         {"name": "리뷰", "manager": "남두현", "docs": "개발중"},
         {"name": "예약", "manager": "남두현", "docs": "개발중"},
-        {"name": " 의사", "manager": "남두현", "docs": f'<a href="{base_url}:8011/docs" target="_blank">API 문서</a>'},
-        {"name": " 챗봇", "manager": "남두현", "docs": f'<a href="{base_url}:8010/docs" target="_blank">API 문서</a>'},
+        {"name": " 의사", "manager": "남두현", "docs": f'<a href="{base_url}:8011/docs" target="_blank">의사 API 문서</a>'},
+        {"name": " 챗봇", "manager": "남두현", "docs": f'<a href="{base_url}:8010/docs" target="_blank">챗봇 API 문서</a>'},
     ]
     return render_template('index.html', services=services)
 
