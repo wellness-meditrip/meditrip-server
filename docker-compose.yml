@@ -97,7 +97,9 @@ services:
 
   # Review Service (리뷰 관리)
   review-service:
-    build: ./apps/review_service
+    build:
+      context: .
+      dockerfile: ./apps/review_service/Dockerfile
     container_name: wellness_review_service
     restart: unless-stopped
     environment:
