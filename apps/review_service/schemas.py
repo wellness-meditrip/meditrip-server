@@ -158,6 +158,13 @@ class ReviewKeywordTemplateResponse(ReviewKeywordTemplateBase):
 
 # === Review Stats Schemas ===
 
+class KeywordStatsItem(BaseModel):
+    """키워드 통계 항목 스키마"""
+    keyword_code: str
+    keyword_name: str
+    is_positive: bool
+    count: int
+
 class ReviewStatsResponse(BaseModel):
     """리뷰 통계 응답 스키마"""
     hospital_id: int
@@ -168,9 +175,9 @@ class ReviewStatsResponse(BaseModel):
     rating_3: int
     rating_2: int
     rating_1: int
-    care_keywords: Optional[Dict[str, Any]] = None
-    service_keywords: Optional[Dict[str, Any]] = None
-    facility_keywords: Optional[Dict[str, Any]] = None
+    care_keywords: List[KeywordStatsItem] = []
+    service_keywords: List[KeywordStatsItem] = []
+    facility_keywords: List[KeywordStatsItem] = []
     last_updated: datetime
 
     class Config:
