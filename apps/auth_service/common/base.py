@@ -22,3 +22,18 @@ Base = declarative_base()
 def session_factory():
     Base.metadata.create_all(engine)
     return _SessionFactory()
+
+def get_db():
+    """
+    데이터베이스 세션을 생성하고 관리하는 의존성 함수
+    FastAPI의 Depends()와 함께 사용
+    """
+    db = session_factory()
+    try:
+        yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()

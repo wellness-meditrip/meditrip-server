@@ -31,8 +31,16 @@ class User(Base):
     google_auth_info = Column(Text, nullable=True)
     google_id = Column(String(255), nullable=True, index=True)
     refresh_token = Column(Text, nullable=True)
-    gender = Column(String(10), nullable=True)
+    gender = Column(String(10), nullable=True)  # 'male', 'female'
     birthdate = Column(DATE, nullable=True)
+    
+    # 관심사 및 동의 필드
+    topics_of_interest = Column(Text, nullable=True)  # JSON 문자열로 저장
+    terms_agreement = Column(Boolean, nullable=False, default=False)  # 약관 동의 (필수)
+    marketing_agreement = Column(Boolean, nullable=False, default=False)  # 마케팅 수신 동의 (선택)
+    
+    # 계정 타입 구분
+    account_type = Column(String(20), nullable=False, default='email')  # 'email', 'google', 'line'
 
     country_id = Column(Integer, ForeignKey('meditrip_country.id'), nullable=True)
     country_obj = relationship("Country", back_populates="users")

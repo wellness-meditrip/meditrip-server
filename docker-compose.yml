@@ -44,7 +44,7 @@ services:
     networks:
       - wellness_network
 
-  # Account Service (회원가입)
+  # Account Service (계정)
   account-service:
     build: ./apps/account_service
     container_name: wellness_account_service

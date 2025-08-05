@@ -281,28 +281,48 @@ class UserRepository:
                 return user
             return None
     
+    @staticmethod  
+    def get_by_id(user_id: int, db: Session) -> Optional[User]:
+        """ID로 사용자 조회 (세션 파라미터 버전)"""
+        return db.query(User).filter(User.id == user_id).first()
+    
     @staticmethod
-    def get_user_by_id(user_id: int) -> Optional[User]:
-        """ID로 사용자 조회"""
-        with get_db_session() as db:
-            user = db.query(User).filter(User.id == user_id).first()
-            if user:
-                # DetachedInstanceError 방지를 위한 속성 로드
-                try:
-                    _ = user.id
-                    _ = user.email
-                    _ = user.nickname
-                    _ = user.line_id
-                    _ = user.google_id
-                    _ = user.country_id
-                    _ = user.last_login
-                    _ = user.is_active
-                except Exception:
-                    pass
-                
-                db.expunge(user)  # 세션에서 분리
-                return user
-            return None
+    def get_refresh_token(user_id: int, db: Session) -> Optional[str]:
+        """사용자의 리프레시 토큰 조회"""
+        user = db.query(User).filter(User.id == user_id).first()
+        return user.refresh_token if user else None
+    
+    @staticmethod
+    def update_refresh_token(user_id: int, refresh_token: str, db: Session) -> bool:
+        """사용자의 리프레시 토큰 업데이트 (세션 파라미터 버전)"""
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.refresh_token = refresh_token
+            db.commit()
+            return True
+        return False
+    
+    @staticmethod
+    def clear_refresh_token(user_id: int, db: Session) -> bool:
+        """사용자의 리프레시 토큰 제거"""
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.refresh_token = None
+            db.commit()
+            return True
+        return False
+    
+    @staticmethod
+    def update_last_login(user_id: int, db: Session) -> bool:
+        """사용자의 마지막 로그인 시간 업데이트 (세션 파라미터 버전)"""
+        from datetime import datetime
+        
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user.last_login = datetime.utcnow()
+            db.commit()
+            return True
+        return False
     
     # DELETE
     @staticmethod
