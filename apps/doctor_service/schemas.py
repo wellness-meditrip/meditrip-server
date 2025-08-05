@@ -21,6 +21,7 @@ class DoctorBase(BaseModel):
     license_number: str = Field(..., min_length=1, max_length=50, description="의사 면허번호")
     bio: Optional[str] = Field(None, description="의사 소개/약력")
     profile_image: Optional[str] = Field(None, max_length=255, description="프로필 이미지 URL")
+    hospital_id: int = Field(..., description="소속 병원 ID")
 
 
 class DoctorCreate(DoctorBase):
@@ -35,6 +36,7 @@ class DoctorUpdate(BaseModel):
     doctor_phone: Optional[str] = Field(None, max_length=20)
     bio: Optional[str] = None
     profile_image: Optional[str] = Field(None, max_length=255)
+    hospital_id: Optional[int] = Field(None, description="소속 병원 ID")
 
 
 class DoctorResponse(DoctorBase):

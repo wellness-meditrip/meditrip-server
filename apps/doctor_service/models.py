@@ -24,6 +24,9 @@ class Doctor(Base):
     bio = Column(Text, nullable=True, comment="의사 소개/약력")
     profile_image = Column(String(255), nullable=True, comment="프로필 이미지 URL")
     
+    # 병원 정보
+    hospital_id = Column(Integer, nullable=False, comment="소속 병원 ID (hospital_service와 연결)")
+    
     # 생성/수정 시간 자동 관리
     created_at = Column(DateTime, default=datetime.utcnow, comment="생성일시")
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment="수정일시")
