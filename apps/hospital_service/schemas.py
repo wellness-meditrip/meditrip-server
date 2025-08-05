@@ -79,7 +79,25 @@ class Department(BaseModel):
 
 class HospitalDetailBase(BaseModel):
     """병원 세부 정보 베이스 스키마"""
+    # 편의시설
     parking_available: bool = False
+    parking_description: Optional[str] = None
+    
+    wifi_available: bool = False
+    wifi_description: Optional[str] = None
+    
+    luggage_storage: bool = False
+    luggage_storage_description: Optional[str] = None
+    
+    private_treatment: bool = False
+    private_treatment_description: Optional[str] = None
+    
+    airport_pickup: bool = False
+    airport_pickup_description: Optional[str] = None
+    
+    translation_service: bool = False
+    translation_description: Optional[str] = None
+    
     operating_hours: Optional[List[OperatingHour]] = None
     images: Optional[List[HospitalImage]] = None
     departments: Optional[List[Department]] = None
@@ -117,7 +135,20 @@ class HospitalDetailCreate(HospitalDetailBase):
 
 class HospitalDetailUpdate(BaseModel):
     """병원 세부 정보 수정 요청 스키마"""
+    # 편의시설
     parking_available: Optional[bool] = None
+    parking_description: Optional[str] = None
+    wifi_available: Optional[bool] = None
+    wifi_description: Optional[str] = None
+    luggage_storage: Optional[bool] = None
+    luggage_storage_description: Optional[str] = None
+    private_treatment: Optional[bool] = None
+    private_treatment_description: Optional[str] = None
+    airport_pickup: Optional[bool] = None
+    airport_pickup_description: Optional[str] = None
+    translation_service: Optional[bool] = None
+    translation_description: Optional[str] = None
+    
     operating_hours: Optional[List[OperatingHour]] = None
     images: Optional[List[HospitalImage]] = None
     departments: Optional[List[Department]] = None

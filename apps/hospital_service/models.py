@@ -56,8 +56,24 @@ class HospitalDetail(Base):
     id = Column(Integer, primary_key=True, index=True, comment="세부정보 ID")
     hospital_id = Column(Integer, ForeignKey("hospitals.hospital_id", ondelete="CASCADE"), nullable=False, comment="병원 ID")
     
-    # 주차장 정보
+    # 편의시설 정보
     parking_available = Column(Boolean, default=False, comment="주차장 유무")
+    parking_description = Column(String(200), nullable=True, comment="주차장 설명")
+    
+    wifi_available = Column(Boolean, default=False, comment="무료 와이파이")
+    wifi_description = Column(String(200), nullable=True, comment="와이파이 설명")
+    
+    luggage_storage = Column(Boolean, default=False, comment="짐보관 서비스")
+    luggage_storage_description = Column(String(200), nullable=True, comment="짐보관 설명")
+    
+    private_treatment = Column(Boolean, default=False, comment="프라이빗 진료")
+    private_treatment_description = Column(String(200), nullable=True, comment="프라이빗 진료 설명")
+    
+    airport_pickup = Column(Boolean, default=False, comment="공항 픽업 서비스")
+    airport_pickup_description = Column(String(200), nullable=True, comment="공항 픽업 설명")
+    
+    translation_service = Column(Boolean, default=False, comment="통역 서비스")
+    translation_description = Column(String(200), nullable=True, comment="통역 서비스 설명")
     
     # 병원 운영시간 (JSON 형태로 저장)
     operating_hours = Column(Text, nullable=True, comment="병원 운영시간 (JSON)")
