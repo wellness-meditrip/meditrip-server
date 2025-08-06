@@ -122,5 +122,19 @@ def root():
         "service": "Auth Service",
         "status": "healthy",
         "version": "1.0.0",
-        "message": "의사 정보 관리 서비스가 정상적으로 작동 중입니다!️"
+        "message": "인증 관리 서비스가 정상적으로 작동 중입니다!️"
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info",
+        # 50MB 제한 설정
+        limit_max_requests=1000,
+        timeout_keep_alive=60
+    )
