@@ -46,6 +46,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# OPTIONS 요청 처리 (CORS Preflight)
+@app.options("/{full_path:path}")
+async def options_handler(request: Request):
+    """모든 OPTIONS 요청에 대한 CORS 헤더 반환"""
+    return JSONResponse(
+        status_code=200,
+        content="OK",
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Credentials": "true"
+        }
+    )
+
 # 요청 로깅 미들웨어
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -53,6 +68,17 @@ async def log_requests(request: Request, call_next):
     
     # 요청 로깅
     logger.info(f"📨 {request.method} {request.url.path}")
+    
+    # OPTIONS 요청은 바로 처리
+    if request.method == "OPTIONS":
+        response = JSONResponse(status_code=200, content="OK")
+        response.headers.update({
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS", 
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Credentials": "true"
+        })
+        return response
     
     try:
         response = await call_next(request)
