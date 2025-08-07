@@ -46,28 +46,15 @@ services:
 
   # Account Service (계정)
   account-service:
-    build: ./apps/account_service
+    build:
+      context: .
+      dockerfile: ./apps/account_service/Dockerfile
     container_name: wellness_account_service
     restart: unless-stopped
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${ACCOUNT_DB}
     ports:
       - "${ACCOUNT_SERVICE_PORT}:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - wellness_network
-
-  # User Service (계정 관리)
-  user-service:
-    build: ./apps/user_service
-    container_name: wellness_user_service
-    restart: unless-stopped
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${USER_DB}
-    ports:
-      - "${USER_SERVICE_PORT}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -113,19 +100,19 @@ services:
       - wellness_network
 
   # Reservation Service (예약 관리)
-  reservation-service:
-    build: ./apps/reservation_service
-    container_name: wellness_reservation_service
-    restart: unless-stopped
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${RESERVATION_DB}
-    ports:
-      - "${RESERVATION_SERVICE_PORT}:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - wellness_network
+  #reservation-service:
+  #  build: ./apps/reservation_service
+  #  container_name: wellness_reservation_service
+  #  restart: unless-stopped
+  #  environment:
+  #    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${RESERVATION_DB}
+  #  ports:
+  #    - "${RESERVATION_SERVICE_PORT}:8000"
+  #  depends_on:
+  #    postgres:
+  #      condition: service_healthy
+  #  networks:
+  #    - wellness_network
 
   # Doctor Service (의사 정보)
   doctor-service:
@@ -149,19 +136,19 @@ services:
       - wellness_network
 
   # Package Service (패키지 관리)
-  package-service:
-    build: ./apps/package_service
-    container_name: wellness_package_service
-    restart: unless-stopped
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${PACKAGE_DB}
-    ports:
-      - "${PACKAGE_SERVICE_PORT}:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - wellness_network
+  #package-service:
+  #  build: ./apps/package_service
+  #  container_name: wellness_package_service
+  #  restart: unless-stopped
+  #  environment:
+  #    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${PACKAGE_DB}
+  #  ports:
+  #    - "${PACKAGE_SERVICE_PORT}:8000"
+  #  depends_on:
+  #    postgres:
+  #      condition: service_healthy
+  #  networks:
+  #    - wellness_network
 
   # Qdrant Vector Database
   qdrant:
