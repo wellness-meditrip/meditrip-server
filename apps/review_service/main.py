@@ -29,12 +29,16 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS 설정
+# CORS 설정 - 배포 환경 고려
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://localhost:3000", 
+        "https://wellness-meditrip-frontend.vercel.app"
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
