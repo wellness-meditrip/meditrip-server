@@ -32,17 +32,9 @@ app = FastAPI(
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001", 
-        "https://localhost:3000",
-        "https://localhost:3001",
-        "https://wellness-meditrip-frontend.vercel.app",
-        "https://wellness-meditrip-backend.eastus2.cloudapp.azure.com",
-        "*"  # 개발 환경을 위해 모든 origin 허용
-    ],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
