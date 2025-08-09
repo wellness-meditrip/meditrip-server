@@ -79,7 +79,13 @@ class ReviewBase(BaseModel):
 class ReviewCreate(ReviewBase):
     """리뷰 생성 스키마"""
     keywords: List[ReviewKeywordCreate] = []
-    images: List[ReviewImageCreate] = []
+    images: List[ReviewImageCreate] = Field(default=[], max_items=5)
+    
+    @validator('images')
+    def validate_image_count(cls, v):
+        if len(v) > 5:
+            raise ValueError('최대 5장까지만 업로드 가능합니다.')
+        return v
 
 class ReviewUpdate(BaseModel):
     """리뷰 수정 스키마"""
