@@ -79,7 +79,7 @@ class ReviewBase(BaseModel):
 class ReviewCreate(ReviewBase):
     """리뷰 생성 스키마"""
     keywords: List[ReviewKeywordCreate] = []
-    images: List[ReviewImageCreate] = Field(default=[], max_items=5)
+    images: List[ReviewImageCreate] = []
     
     @validator('images')
     def validate_image_count(cls, v):

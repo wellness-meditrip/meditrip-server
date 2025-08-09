@@ -101,6 +101,10 @@ async def create_review(
             data={"review_id": new_review.review_id}
         )
         
+    except ValueError as e:
+        db.rollback()
+        logger.error(f"❌ 리뷰 생성 validation 실패: {e}")
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         db.rollback()
         logger.error(f"❌ 리뷰 생성 실패: {e}")
