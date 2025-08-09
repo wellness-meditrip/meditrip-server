@@ -9,7 +9,13 @@ from sqlalchemy import and_, or_, desc, func
 from typing import List, Optional
 import logging
 import json
+import base64
+import io
+import httpx
+import asyncio
+import os
 from datetime import datetime
+from PIL import Image
 
 from database import get_database
 from models import Review, ReviewKeyword, ReviewImage, ReviewKeywordTemplate, ReviewStats
@@ -22,6 +28,17 @@ from schemas import (
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+# Auth Service URL 설정 (환경별 포트 자동 감지)
+BASE_URL = os.getenv("BASE_URL", "http://localhost")
+
+# 프로덕션 환경 감지하여 포트 결정
+if "cloudapp.azure.com" in BASE_URL:
+    AUTH_SERVICE_PORT = "8013"  # 프로덕션용 포트
+else:
+    AUTH_SERVICE_PORT = "8001"  # 개발용 포트
+
+AUTH_SERVICE_URL = f"{BASE_URL}:{AUTH_SERVICE_PORT}"
 
 # === Review CRUD Operations ===
 
@@ -57,11 +74,22 @@ async def create_review(
             )
             db.add(keyword)
         
-        # 이미지 추가
+        # 이미지 추가 (Base64 처리)
         for image_data in review_data.images:
+            # Base64 이미지 처리
+            processed_image = process_base64_image(
+                image_data.image_data, 
+                image_data.image_type
+            )
+            
             image = ReviewImage(
                 review_id=new_review.review_id,
-                image_url=image_data.image_url,
+                image_data=processed_image["processed_data"],
+                image_type=processed_image["image_type"],
+                original_filename=image_data.original_filename,
+                file_size=processed_image["file_size"],
+                width=processed_image["width"],
+                height=processed_image["height"],
                 image_order=image_data.image_order,
                 alt_text=image_data.alt_text
             )
@@ -183,7 +211,6 @@ async def search_reviews(
     doctor_id: Optional[int] = Query(None, description="의사 ID"),
     rating_min: Optional[float] = Query(None, ge=1.0, le=5.0, description="최소 평점"),
     rating_max: Optional[float] = Query(None, ge=1.0, le=5.0, description="최대 평점"),
-    is_verified: Optional[bool] = Query(None, description="인증된 리뷰만 조회"),
     keyword_category: Optional[KeywordCategory] = Query(None, description="키워드 카테고리"),
     keyword_code: Optional[str] = Query(None, description="키워드 코드"),
     limit: int = Query(20, ge=1, le=100, description="페이지 크기"),
@@ -206,8 +233,6 @@ async def search_reviews(
             query = query.filter(Review.rating >= rating_min)
         if rating_max:
             query = query.filter(Review.rating <= rating_max)
-        if is_verified is not None:
-            query = query.filter(Review.is_verified == is_verified)
         
         # 키워드 필터
         if keyword_category or keyword_code:
@@ -223,21 +248,26 @@ async def search_reviews(
         # 페이지네이션 적용
         reviews = query.order_by(desc(Review.created_at)).offset(offset).limit(limit).all()
         
+        # 사용자 이름 조회 (병렬 처리)
+        user_ids = [review.user_id for review in reviews]
+        user_names = await get_multiple_user_names(user_ids) if user_ids else {}
+        
         # 응답 데이터 구성
         items = []
         for review in reviews:
             keyword_count = len(review.keywords)
             image_count = len(review.images)
+            user_name = user_names.get(review.user_id, f"User_{review.user_id}")
             
             items.append({
                 "review_id": review.review_id,
                 "hospital_id": review.hospital_id,
                 "user_id": review.user_id,
+                "user_name": user_name,
                 "doctor_id": review.doctor_id,
                 "doctor_name": review.doctor_name,
-                "title": review.title,
+                "content": review.content,
                 "rating": review.rating,
-                "is_verified": review.is_verified,
                 "created_at": review.created_at,
                 "keyword_count": keyword_count,
                 "image_count": image_count
@@ -397,6 +427,69 @@ async def refresh_hospital_stats(
 
 
 # === Helper Functions ===
+
+async def get_user_name(user_id: int) -> str:
+    """auth-service에서 사용자 이름 조회"""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{AUTH_SERVICE_URL}/profile/user/{user_id}",
+                timeout=5.0
+            )
+            if response.status_code == 200:
+                user_data = response.json()
+                return user_data.get("username", f"User_{user_id}")
+            else:
+                logger.warning(f"사용자 {user_id} 정보 조회 실패: {response.status_code}")
+                return f"User_{user_id}"
+    except Exception as e:
+        logger.error(f"사용자 {user_id} 이름 조회 중 오류: {e}")
+        return f"User_{user_id}"
+
+async def get_multiple_user_names(user_ids: List[int]) -> dict:
+    """여러 사용자 이름을 한 번에 조회"""
+    user_names = {}
+    
+    # 중복 제거
+    unique_user_ids = list(set(user_ids))
+    
+    # 병렬로 사용자 정보 조회
+    tasks = [get_user_name(user_id) for user_id in unique_user_ids]
+    results = await asyncio.gather(*tasks)
+    
+    for user_id, user_name in zip(unique_user_ids, results):
+        user_names[user_id] = user_name
+    
+    return user_names
+
+def process_base64_image(image_data: str, image_type: str) -> dict:
+    """Base64 이미지 처리 및 메타데이터 추출"""
+    try:
+        # Data URL 형식 처리
+        if image_data.startswith('data:image'):
+            if ',' in image_data:
+                image_data = image_data.split(',', 1)[1]
+        
+        # Base64 디코딩
+        decoded_image = base64.b64decode(image_data)
+        file_size = len(decoded_image)
+        
+        # PIL로 이미지 정보 추출
+        image_io = io.BytesIO(decoded_image)
+        with Image.open(image_io) as img:
+            width, height = img.size
+            format_type = img.format.lower() if img.format else image_type
+        
+        return {
+            "file_size": file_size,
+            "width": width,
+            "height": height,
+            "image_type": format_type,
+            "processed_data": image_data
+        }
+        
+    except Exception as e:
+        raise ValueError(f"이미지 처리 중 오류: {str(e)}")
 
 async def update_hospital_stats(db: Session, hospital_id: int):
     """병원 리뷰 통계 업데이트"""

@@ -185,3 +185,39 @@ async def get_profile_completion(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="프로필 완성도 조회 중 오류가 발생했습니다."
         )
+
+@router.get("/user/{user_id}", response_model=dict)
+async def get_user_basic_info(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    사용자 기본 정보 조회 (review-service 등에서 사용)
+    
+    user_id로 사용자의 기본 정보(username, email)를 조회합니다.
+    """
+    try:
+        from repository.user import UserRepository
+        
+        user = UserRepository.get_by_id(user_id, db)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="사용자를 찾을 수 없습니다."
+            )
+        
+        return {
+            "user_id": user.id,
+            "username": user.username,
+            "email": user.email
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"사용자 기본 정보 조회 오류: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="사용자 정보 조회 중 오류가 발생했습니다."
+        )

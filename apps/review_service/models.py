@@ -31,7 +31,6 @@ class Review(Base):
     
     # 리뷰 상태
     is_active = Column(Boolean, default=True, comment="활성 상태")
-    is_verified = Column(Boolean, default=False, comment="인증된 리뷰 여부")
     
     # 메타 정보
     created_at = Column(DateTime, default=lambda: datetime.now(KST), comment="생성일시")
@@ -69,8 +68,13 @@ class ReviewImage(Base):
     id = Column(Integer, primary_key=True, index=True, comment="이미지 ID")
     review_id = Column(Integer, ForeignKey("reviews.review_id", ondelete="CASCADE"), nullable=False, comment="리뷰 ID")
     
-    # 이미지 정보
-    image_url = Column(String(500), nullable=False, comment="이미지 URL")
+    # 이미지 정보 (Base64 저장 방식)
+    image_data = Column(Text, nullable=False, comment="Base64 인코딩된 이미지 데이터")
+    image_type = Column(String(10), nullable=False, comment="이미지 타입 (jpg, png, webp)")
+    original_filename = Column(String(255), nullable=True, comment="원본 파일명")
+    file_size = Column(Integer, nullable=False, comment="파일 크기 (bytes)")
+    width = Column(Integer, nullable=True, comment="이미지 너비")
+    height = Column(Integer, nullable=True, comment="이미지 높이")
     image_order = Column(Integer, default=1, comment="이미지 순서")
     alt_text = Column(String(200), nullable=True, comment="이미지 설명")
     

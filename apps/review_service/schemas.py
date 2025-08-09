@@ -40,7 +40,9 @@ class ReviewKeywordResponse(ReviewKeywordBase):
 
 class ReviewImageBase(BaseModel):
     """리뷰 이미지 기본 스키마"""
-    image_url: str = Field(..., max_length=500)
+    image_data: str = Field(..., description="Base64 인코딩된 이미지 데이터")
+    image_type: str = Field(..., max_length=10, description="이미지 타입 (jpg, png, webp)")
+    original_filename: Optional[str] = Field(None, max_length=255, description="원본 파일명")
     image_order: int = Field(default=1, ge=1)
     alt_text: Optional[str] = Field(None, max_length=200)
 
@@ -97,7 +99,6 @@ class ReviewResponse(ReviewBase):
     """리뷰 응답 스키마"""
     review_id: int
     is_active: bool
-    is_verified: bool
     created_at: datetime
     updated_at: datetime
     keywords: List[ReviewKeywordResponse] = []
@@ -111,11 +112,11 @@ class ReviewListResponse(BaseModel):
     review_id: int
     hospital_id: int
     user_id: int
+    user_name: Optional[str] = None
     doctor_id: Optional[int]
     doctor_name: Optional[str]
-    title: str
+    content: str
     rating: float
-    is_verified: bool
     created_at: datetime
     keyword_count: int = 0
     image_count: int = 0
@@ -192,7 +193,6 @@ class ReviewSearchParams(BaseModel):
     doctor_id: Optional[int] = None
     rating_min: Optional[float] = Field(None, ge=1.0, le=5.0)
     rating_max: Optional[float] = Field(None, ge=1.0, le=5.0)
-    is_verified: Optional[bool] = None
     keyword_category: Optional[KeywordCategory] = None
     keyword_code: Optional[str] = None
     limit: int = Field(default=20, ge=1, le=100)
