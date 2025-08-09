@@ -30,16 +30,8 @@ from schemas import (
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Auth Service URL 설정 (환경별 포트 자동 감지)
-BASE_URL = os.getenv("BASE_URL", "http://localhost")
-
-# 프로덕션 환경 감지하여 포트 결정
-if "cloudapp.azure.com" in BASE_URL:
-    AUTH_SERVICE_PORT = "8013"  # 프로덕션용 포트
-else:
-    AUTH_SERVICE_PORT = "8001"  # 개발용 포트
-
-AUTH_SERVICE_URL = f"{BASE_URL}:{AUTH_SERVICE_PORT}"
+# Auth Service URL 설정 (프로덕션용)
+AUTH_SERVICE_URL = "https://wellness-meditrip-backend.eastus2.cloudapp.azure.com:8013"
 
 # === Review CRUD Operations ===
 
