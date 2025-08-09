@@ -100,19 +100,21 @@ services:
       - wellness_network
 
   # Reservation Service (예약 관리)
-  #reservation-service:
-  #  build: ./apps/reservation_service
-  #  container_name: wellness_reservation_service
-  #  restart: unless-stopped
-  #  environment:
-  #    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${RESERVATION_DB}
-  #  ports:
-  #    - "${RESERVATION_SERVICE_PORT}:8000"
-  #  depends_on:
-  #    postgres:
-  #      condition: service_healthy
-  #  networks:
-  #    - wellness_network
+  reservation-service:
+    build:
+      context: .
+      dockerfile: ./apps/reservation_service/Dockerfile
+    container_name: wellness_reservation_service
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${RESERVATION_DB}
+    ports:
+      - "${RESERVATION_SERVICE_PORT}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wellness_network
 
   # Doctor Service (의사 정보)
   doctor-service:
