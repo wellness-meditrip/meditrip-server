@@ -89,6 +89,31 @@ class ReservationBase(BaseModel):
             raise ValueError('올바른 전화번호 형식이 아닙니다.')
         return v
 
+    @validator('reservation_time')
+    def validate_and_convert_time(cls, v):
+        """시간 검증 및 한국시간 변환"""
+        from datetime import datetime, timezone, timedelta
+        import pytz
+        
+        if isinstance(v, str):
+            # ISO 형식 시간 문자열 처리 (예: "13:16:04.421Z")
+            if v.endswith('Z'):
+                # UTC 시간을 한국시간으로 변환
+                utc_dt = datetime.fromisoformat(v.replace('Z', '+00:00'))
+                kst = pytz.timezone('Asia/Seoul')
+                kst_dt = utc_dt.astimezone(kst)
+                return kst_dt.time()
+            else:
+                # 일반 시간 문자열 처리 (예: "13:16")
+                try:
+                    return datetime.strptime(v, '%H:%M').time()
+                except ValueError:
+                    try:
+                        return datetime.strptime(v, '%H:%M:%S').time()
+                    except ValueError:
+                        raise ValueError('올바른 시간 형식이 아닙니다. (HH:MM 또는 ISO 형식)')
+        return v
+
     @validator('reservation_date')
     def validate_future_date(cls, v):
         """예약 날짜가 미래인지 검증"""
