@@ -81,11 +81,12 @@ class ReviewCreate(ReviewBase):
     keywords: List[ReviewKeywordCreate] = []
     images: List[ReviewImageCreate] = []
     
-    @validator('images')
-    def validate_image_count(cls, v):
-        if len(v) > 5:
-            raise ValueError('최대 5장까지만 업로드 가능합니다.')
-        return v
+    # 임시로 이미지 검증 비활성화
+    # @validator('images')
+    # def validate_image_count(cls, v):
+    #     if len(v) > 5:
+    #         raise ValueError('최대 5장까지만 업로드 가능합니다.')
+    #     return v
 
 class ReviewUpdate(BaseModel):
     """리뷰 수정 스키마"""

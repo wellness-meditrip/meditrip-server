@@ -42,6 +42,8 @@ async def create_review(
 ):
     """새 리뷰 생성"""
     try:
+        logger.info(f"🔍 리뷰 생성 요청 데이터: hospital_id={review_data.hospital_id}, user_id={review_data.user_id}, 이미지 수={len(review_data.images)}")
+        
         # 새 리뷰 생성
         new_review = Review(
             hospital_id=review_data.hospital_id,
@@ -68,7 +70,8 @@ async def create_review(
             db.add(keyword)
         
         # 이미지 추가 (Base64 처리)
-        for image_data in review_data.images:
+        for i, image_data in enumerate(review_data.images):
+            logger.info(f"🖼️ 이미지 {i+1} 처리 중...")
             # Base64 이미지 처리
             processed_image = process_base64_image(
                 image_data.image_data, 
@@ -108,6 +111,8 @@ async def create_review(
     except Exception as e:
         db.rollback()
         logger.error(f"❌ 리뷰 생성 실패: {e}")
+        import traceback
+        logger.error(f"상세 오류: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="리뷰 생성 중 오류가 발생했습니다.")
 
 
