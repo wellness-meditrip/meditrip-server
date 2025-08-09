@@ -438,6 +438,10 @@ async def get_user_name(user_id: int) -> str:
             )
             if response.status_code == 200:
                 user_data = response.json()
+                # nickname이 있으면 nickname 사용, 없으면 username 사용
+                nickname = user_data.get("nickname")
+                if nickname:
+                    return nickname
                 return user_data.get("username", f"User_{user_id}")
             else:
                 logger.warning(f"사용자 {user_id} 정보 조회 실패: {response.status_code}")
