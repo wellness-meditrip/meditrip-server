@@ -126,7 +126,7 @@ class ReviewListResponse(BaseModel):
     rating: float
     created_at: datetime
     keyword_count: int = 0
-    image_count: int = 0
+    images: List[ReviewImageResponse] = []
 
     class Config:
         from_attributes = True
