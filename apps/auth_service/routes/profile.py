@@ -194,7 +194,7 @@ async def get_user_basic_info(
     """
     사용자 기본 정보 조회 (review-service 등에서 사용)
     
-    user_id로 사용자의 기본 정보(username, email)를 조회합니다.
+    user_id로 사용자의 기본 정보(username, email, nickname)를 조회합니다.
     """
     try:
         from repository.user import UserRepository
@@ -210,7 +210,8 @@ async def get_user_basic_info(
         return {
             "user_id": user.id,
             "username": user.username,
-            "email": user.email
+            "email": user.email,
+            "nickname": user.nickname
         }
         
     except HTTPException:
