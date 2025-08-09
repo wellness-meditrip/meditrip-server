@@ -258,8 +258,23 @@ async def search_reviews(
         items = []
         for review in reviews:
             keyword_count = len(review.keywords)
-            image_count = len(review.images)
             user_name = user_names.get(review.user_id, f"User_{review.user_id}")
+            
+            # 이미지 리스트 구성
+            images = []
+            for image in review.images:
+                images.append({
+                    "id": image.id,
+                    "image_data": image.image_data,
+                    "image_type": image.image_type,
+                    "original_filename": image.original_filename,
+                    "file_size": image.file_size,
+                    "width": image.width,
+                    "height": image.height,
+                    "image_order": image.image_order,
+                    "alt_text": image.alt_text,
+                    "created_at": image.created_at
+                })
             
             items.append({
                 "review_id": review.review_id,
@@ -272,7 +287,7 @@ async def search_reviews(
                 "rating": review.rating,
                 "created_at": review.created_at,
                 "keyword_count": keyword_count,
-                "image_count": image_count
+                "images": images
             })
         
         return PaginatedResponse(
