@@ -14,6 +14,7 @@ import io
 import httpx
 import asyncio
 import os
+import requests
 from datetime import datetime
 from PIL import Image
 
@@ -431,21 +432,20 @@ async def refresh_hospital_stats(
 async def get_user_name(user_id: int) -> str:
     """auth-service에서 사용자 이름 조회"""
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{AUTH_SERVICE_URL}/profile/user/{user_id}",
-                timeout=5.0
-            )
-            if response.status_code == 200:
-                user_data = response.json()
-                # nickname이 있으면 nickname 사용, 없으면 username 사용
-                nickname = user_data.get("nickname")
-                if nickname:
-                    return nickname
-                return user_data.get("username", f"User_{user_id}")
-            else:
-                logger.warning(f"사용자 {user_id} 정보 조회 실패: {response.status_code}")
-                return f"User_{user_id}"
+        response = requests.get(
+            f"{AUTH_SERVICE_URL}/profile/user/{user_id}",
+            timeout=10.0
+        )
+        if response.status_code == 200:
+            user_data = response.json()
+            # nickname이 있으면 nickname 사용, 없으면 username 사용
+            nickname = user_data.get("nickname")
+            if nickname:
+                return nickname
+            return user_data.get("username", f"User_{user_id}")
+        else:
+            logger.warning(f"사용자 {user_id} 정보 조회 실패: {response.status_code}")
+            return f"User_{user_id}"
     except Exception as e:
         logger.error(f"사용자 {user_id} 이름 조회 중 오류: {e}")
         return f"User_{user_id}"
