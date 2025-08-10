@@ -27,8 +27,9 @@ from schemas import (
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Hospital Service URL 설정 (프로덕션 환경)
+# Service URLs 설정 (프로덕션 환경)
 HOSPITAL_SERVICE_URL = "https://wellness-meditrip-backend.eastus2.cloudapp.azure.com:8015"
+DOCTOR_SERVICE_URL = "https://wellness-meditrip-backend.eastus2.cloudapp.azure.com:8011"
 
 # === Reservation CRUD Operations ===
 
@@ -280,15 +281,27 @@ async def search_reservations(
         # 페이지네이션 적용
         reservations = query.order_by(desc(Reservation.created_at)).offset(offset).limit(limit).all()
         
+        # 병원명과 의사명 조회를 위한 ID 수집
+        hospital_ids = list(set([r.hospital_id for r in reservations if r.hospital_id]))
+        doctor_ids = list(set([r.doctor_id for r in reservations if r.doctor_id]))
+        
+        # 병원명과 의사명 병렬 조회
+        hospital_names = await get_multiple_hospital_names(hospital_ids) if hospital_ids else {}
+        doctor_names = await get_multiple_doctor_names(doctor_ids) if doctor_ids else {}
+        
         # 응답 데이터 구성
         items = []
         for reservation in reservations:
             image_count = len(reservation.images)
+            hospital_name = hospital_names.get(reservation.hospital_id, f"병원_{reservation.hospital_id}")
+            doctor_name = doctor_names.get(reservation.doctor_id, f"의사_{reservation.doctor_id}") if reservation.doctor_id else None
             
             items.append({
                 "reservation_id": reservation.reservation_id,
                 "hospital_id": reservation.hospital_id,
+                "hospital_name": hospital_name,
                 "doctor_id": reservation.doctor_id,
+                "doctor_name": doctor_name,
                 "user_id": reservation.user_id,
                 "symptoms": reservation.symptoms,
                 "reservation_date": reservation.reservation_date,
@@ -508,6 +521,58 @@ async def validate_hospital_operating_hours(hospital_id: int, reservation_date: 
     except Exception as e:
         logger.error(f"운영시간 검증 중 오류: {e}")
         return False
+
+async def get_hospital_name(hospital_id: int) -> str:
+    """hospital-service에서 병원명 조회"""
+    try:
+        response = requests.get(
+            f"{HOSPITAL_SERVICE_URL}/hospitals/{hospital_id}",
+            timeout=5.0
+        )
+        if response.status_code == 200:
+            hospital_data = response.json()
+            return hospital_data.get("hospital_name", f"병원_{hospital_id}")
+        else:
+            return f"병원_{hospital_id}"
+    except Exception as e:
+        logger.error(f"병원 {hospital_id} 이름 조회 중 오류: {e}")
+        return f"병원_{hospital_id}"
+
+async def get_doctor_name(doctor_id: int) -> str:
+    """doctor-service에서 의사명 조회"""
+    try:
+        response = requests.get(
+            f"{DOCTOR_SERVICE_URL}/doctors/{doctor_id}",
+            timeout=5.0
+        )
+        if response.status_code == 200:
+            doctor_data = response.json()
+            return doctor_data.get("name", f"의사_{doctor_id}")
+        else:
+            return f"의사_{doctor_id}"
+    except Exception as e:
+        logger.error(f"의사 {doctor_id} 이름 조회 중 오류: {e}")
+        return f"의사_{doctor_id}"
+
+async def get_multiple_hospital_names(hospital_ids: List[int]) -> dict:
+    """여러 병원명을 병렬로 조회"""
+    if not hospital_ids:
+        return {}
+    
+    tasks = [get_hospital_name(hospital_id) for hospital_id in hospital_ids]
+    results = await asyncio.gather(*tasks)
+    
+    return dict(zip(hospital_ids, results))
+
+async def get_multiple_doctor_names(doctor_ids: List[int]) -> dict:
+    """여러 의사명을 병렬로 조회"""
+    if not doctor_ids:
+        return {}
+    
+    tasks = [get_doctor_name(doctor_id) for doctor_id in doctor_ids]
+    results = await asyncio.gather(*tasks)
+    
+    return dict(zip(doctor_ids, results))
 
 def process_base64_image(image_data: str, image_type: str) -> dict:
     """Base64 이미지 처리 및 메타데이터 추출"""
