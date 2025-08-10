@@ -33,7 +33,11 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "*",
+        "https://meditrip-web-eta.vercel.app",
+        "https://meditrip-web-eta.vercel.app/",
         "http://localhost:3000",
+        "http://localhost:3001",
         "https://localhost:3000", 
         "https://wellness-meditrip-frontend.vercel.app"
     ],
