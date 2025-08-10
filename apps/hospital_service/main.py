@@ -76,7 +76,13 @@ app = FastAPI(
 # CORS 미들웨어 추가 (프론트엔드와의 통신을 위해)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 개발 환경에서는 모든 출처 허용
+    allow_origins=[
+        "*",
+        "https://meditrip-web-eta.vercel.app",
+        "https://meditrip-web-eta.vercel.app/",
+        "http://localhost:3000",
+        "http://localhost:3001"
+    ],
     allow_credentials=True,
     allow_methods=["*"],  # 모든 HTTP 메서드 허용
     allow_headers=["*"],  # 모든 헤더 허용
