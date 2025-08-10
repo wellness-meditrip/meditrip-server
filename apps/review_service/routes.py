@@ -38,14 +38,21 @@ AUTH_SERVICE_URL = "https://wellness-meditrip-backend.eastus2.cloudapp.azure.com
 @router.post("/reviews", response_model=ApiResponse, status_code=201)
 async def create_review(
     request: Request,
-    review_data: ReviewCreate,
     db: Session = Depends(get_database)
 ):
     """새 리뷰 생성"""
     try:
         # 요청 데이터 상세 로깅
-        logger.info(f"🔍 리뷰 생성 요청 원본 데이터: {await request.json()}")
-        logger.info(f"🔍 리뷰 생성 파싱된 데이터: hospital_id={review_data.hospital_id}, user_id={review_data.user_id}, 이미지 수={len(review_data.images)}")
+        raw_data = await request.json()
+        logger.info(f"🔍 리뷰 생성 요청 원본 데이터: {raw_data}")
+        
+        # Pydantic으로 데이터 검증
+        try:
+            review_data = ReviewCreate(**raw_data)
+            logger.info(f"🔍 리뷰 생성 파싱된 데이터: hospital_id={review_data.hospital_id}, user_id={review_data.user_id}, 이미지 수={len(review_data.images)}")
+        except Exception as validation_error:
+            logger.error(f"❌ Pydantic 검증 실패: {validation_error}")
+            raise HTTPException(status_code=422, detail=f"데이터 검증 실패: {str(validation_error)}")
         
         # 새 리뷰 생성
         new_review = Review(
