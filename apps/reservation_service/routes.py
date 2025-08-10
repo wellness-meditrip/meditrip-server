@@ -547,7 +547,7 @@ async def get_doctor_name(doctor_id: int) -> str:
         )
         if response.status_code == 200:
             doctor_data = response.json()
-            return doctor_data.get("name", f"의사_{doctor_id}")
+            return doctor_data.get("doctor_name", f"의사_{doctor_id}")
         else:
             return f"의사_{doctor_id}"
     except Exception as e:
