@@ -3,7 +3,7 @@ routes.py - Review Service API Routes
 리뷰 관리 시스템의 API 엔드포인트 정의
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Path
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, func
 from typing import List, Optional
@@ -37,12 +37,15 @@ AUTH_SERVICE_URL = "https://wellness-meditrip-backend.eastus2.cloudapp.azure.com
 
 @router.post("/reviews", response_model=ApiResponse, status_code=201)
 async def create_review(
+    request: Request,
     review_data: ReviewCreate,
     db: Session = Depends(get_database)
 ):
     """새 리뷰 생성"""
     try:
-        logger.info(f"🔍 리뷰 생성 요청 데이터: hospital_id={review_data.hospital_id}, user_id={review_data.user_id}, 이미지 수={len(review_data.images)}")
+        # 요청 데이터 상세 로깅
+        logger.info(f"🔍 리뷰 생성 요청 원본 데이터: {await request.json()}")
+        logger.info(f"🔍 리뷰 생성 파싱된 데이터: hospital_id={review_data.hospital_id}, user_id={review_data.user_id}, 이미지 수={len(review_data.images)}")
         
         # 새 리뷰 생성
         new_review = Review(
